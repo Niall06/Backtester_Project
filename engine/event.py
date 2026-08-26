@@ -19,3 +19,65 @@ class Event(ABC):
 #This means that you dont accidentally instantiate an empty event object. 
 
 #The 'abstractmethod' decorator is used to define methods that must be implemented by any subclass
+
+class MarketEvent(Event):
+    '''The event type that singals a change in the market data.'''
+    def __init__(self):
+        self._type = 'MARKET'
+    
+    @property 
+    def type(self): 
+        '''Fufills ABC requirement. 
+        '''
+        return self._type
+
+#This class indicantes that the market data has changed and the strategy should be run
+
+
+# The following classes indicate a decision from the system - hence they inlcude data. 
+
+class SignalEvent(Event):
+    '''The event type that signals a trading signal.'''
+    def __init__(self, symbol: str, datetime: str, signal_type: str): 
+        self._type = 'SIGNAL'
+        self.symbol = symbol
+        self.datetime = datetime
+        self.signal_type = signal_type
+    
+
+
+    @property 
+    def type(self): 
+        '''Fufills ABC requirement. 
+        '''
+        return self._type
+
+class OrderEvent(Event):
+    '''This handles the event of sending an order to the execution system.'''
+    def __init__(self, symbol:str, order_type:str, quantity:int, direction:str):
+        '''
+        Parameters: 
+        symbol: the ticker symbol, 'KO' for example
+        order_type: 'MKT' or 'LMT' for market or limit orders
+        quantity: the quantity of shares to be bought or sold
+        direction: 'BUY' or 'SELL' for long or short'''
+
+        self._type = 'ORDER'
+        self.symbol = symbol
+        self.order_type = order_type
+        self.quantity = quantity
+        self.direction = direction
+
+    @property 
+    def type(self):
+        '''Fufills ABC requirement. 
+        '''
+        return self._type
+    
+
+class FillEvent(Event):
+    
+
+
+
+        
