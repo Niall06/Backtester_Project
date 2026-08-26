@@ -76,6 +76,38 @@ class OrderEvent(Event):
     
 
 class FillEvent(Event):
+    '''This handles the even of sending an order to the ExecutionHandler
+    '''
+    def __init__(self, timeindex:str, symbol:str, exchange:str, quantity:int, direction:str, fill_cost:float, commission:float=None):
+        '''
+        Parameters
+        timeindex - The bar-resolution timestamp when the order was filled
+        symbol - ticker symbol
+        quantity - number of shares filled
+        direction- Buying or selling
+        fill_cost - the actual price of the trasnaction
+        commission - transaction fee'''
+
+        self._type = 'FILL'
+        self.timeindex = timeindex
+        self.symbol = symbol
+        self.exchange = exchange
+        self.quantity = quantity
+        self.direction = direction
+        self.fill_cost = fill_cost
+        self.commission = commission if commission is not None else self.calculate_commission()
+    @property
+
+    def type(self):
+        '''Fufills ABC requirement. 
+        '''
+        return self._type
+
+    def calculate_commission(self):
+        '''Default transaction fee'''
+
+        return 1.00 + 0.01 * self.quantity
+
     
 
 
