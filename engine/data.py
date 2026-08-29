@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np 
 import pandas as pd
 import os
+from engine.event import MarketEvent
 class DataHandler(ABC):
     """
     DataHandler is an abstract base class providing an interface for
@@ -36,7 +37,7 @@ class HistoricCSVDataHandler(DataHandler):
     ''' Historic CSV Data Handler 
     '''
 
-    def __init__(self, events, csv_dir, symbol_list):
+    def __init__(self, events, csv_dir, symbol_list,):
         """
         Initialises the historic data handler by requesting
         the location of the CSV files and a list of symbols.
@@ -52,6 +53,7 @@ class HistoricCSVDataHandler(DataHandler):
         self.events = events
         self.csv_dir = csv_dir
         self.symbol_list = symbol_list
+        self.continue_backtest = True
 
         self.symbol_data = {}
         self.latest_symbol_data = {}
@@ -68,9 +70,31 @@ class HistoricCSVDataHandler(DataHandler):
     def update_bars(self):
         for s in self.symbol_list:
             try:
-            self.latest_symbol_data[s].append(next(self.symbol_data_iter[s]))
-            self.events = MarketEvent()
+                bar = next(self.symbol_data_iter[s])
+            except StopIteration:
+                self.continue_backtest = False
+                return
+            else: 
+                if bar is not None:
+                    self.latest_symbol_data[s].append(bar)
             
+            self.events.put(MarketEvent())
+
+    def get_latest_bar(self, symbol=str):
+        try:
+            return self.latest_symbol_data[symbol][-1]
+        except KeyError:
+            print(f"Symbol {symbol} is not available in the historical data set.")
+            return None
+
+    def get_latest_bars(self, symbol, N: int = 1):
+        try:
+            return self.latest_symbol_data[symbol][-N:]
+        except KeyError:
+                print(f"Symbol {symbol} is not available in the historical data set.")
+                return None
+
+        
 
 
 
