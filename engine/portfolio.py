@@ -43,6 +43,19 @@ class NaivePortfolio(Portfolio):
         self.all_positions.append(self.current_positions.copy())
         self.all_holdings.append(self.current_holdings.copy())
 
-    
+    def update_timeindex(self, event):
+        total_stock_holdings = 0.0
+        for s in self.symbol_list:
+            self.current_holdings[s] = self.current_positions[s]*self.bars.get_latest_bar(s)[1]['Close']
+            total_stock_holdings += self.current_holdings[s]
+        date_time = self.bars.get_latest_bar(self.symbol_list[0])[0]
+        self.current_holdings['datetime'] = date_time
+        self.current_positions['datetime'] = date_time
+        self.current_holdings['total'] = total_stock_holdings + self.current_holdings['cash']
+        self.all_holdings.append(self.current_holdings.copy())
+        self.all_positions.append(self.current_positions.copy())
+        # Must do both so that the positions and holdings are synchronised
+
+
 
 
