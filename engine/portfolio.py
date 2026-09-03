@@ -1,6 +1,6 @@
 #Position sizing and risk tracking
 from abc import ABC, abstractmethod
-
+from engine.event import OrderEvent
 
 class Portfolio(ABC):
     '''Provides an interface for all portfolios ensuring they each contain all the required data.
@@ -58,6 +58,7 @@ class NaivePortfolio(Portfolio):
         # Must do both so that the positions and holdings are synchronised
 
     def update_fill(self, event):
+
         s = event.symbol
         if event.direction == 'BUY':
             self.current_positions[s] += event.quantity
@@ -68,6 +69,35 @@ class NaivePortfolio(Portfolio):
         self.current_holdings['cash'] -= event.commission
         self.current_holdings['commission'] += event.commission
 
+    def update_signal(self,event):
+        # 1. Initialize order ticket blueprint
+        Order = OrderEvent(event.symbol, 'MKT', 0 ,None)
+        
+        # 2. Check signal intent
+        if event.signal_type == 'LONG':
+            Order.direction = 'BUY'
+            Order.quantity = 100
+
+        elif event.signal_type == 'SHORT':
+            Order.direction= 'SELL'
+            Order.quantity = 100
+
+        elif event.signal_type == 'EXIT':
+            Order.quantity = abs(self.current_positions[event.symbol])
+
+            if self.current_positions[event.symbol] > 0:
+                Order.direction = 'SELL'
+            elif self.current_positions[event.symbol] < 0:
+                Order.direction = 'BUY'
+            elif self.current_positions[event.symbol] == 0:
+                Order.direction = None
+                Order.quantity = 0
+        # 3. Guard clause: only push valid orders
+        if Order.direction and Order.quantity > 0:
+            self.events.put(Order)
+
+            
+            
 
 
 
